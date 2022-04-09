@@ -58,7 +58,7 @@ clim <- read.csv("https://raw.githubusercontent.com/naomitague/ESM232_Examples/m
 ```
 
 
-
+note: copied over into /yield_function.R
 
 ```{r almond_function}
 
