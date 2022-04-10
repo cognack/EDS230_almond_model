@@ -79,9 +79,67 @@ almond <- function(climate, temp_min_coeff1 = -0.015, temp_min_coeff2 = 0.0046, 
 
 ```
 
+# marie added code below
+## model version 1
+```{r}
+source(here("R", "almond_yield_anom.R"))
+almond_yield_anomaly1 <- almond_yield_anom(climate_data = clim)
+```
+
+```{r}
+# xxx...not sure why these values are slightly off what Naomi provided
+anom_2000 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2000]
+anom_2001 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2001]
+anom_2002 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2002]
+
+anom_2000
+anom_2001
+anom_2002
+```
 
 
+```{r}
+ggplot(data = almond_yield_anomaly1, aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
+  geom_point()
+```
 
+## model version 2
+```{r}
+# subset data
+tn_2_values <- clim %>% 
+    filter(month == 2) %>% 
+    group_by(year) %>% 
+    summarise(tn_2 = min(tmin_c))
 
+p_1_values <- clim %>% 
+    filter(month == 1) %>% 
+    group_by(year) %>% 
+    summarise(p_1 = sum(precip))
+```
 
+```{r}
+year_range <- seq(from = min(tn_2_values$year), to = max(tn_2_values$year), by = 1)
+```
 
+```{r}
+almond_yield_anomaly2 <- c()
+
+source(here("R", "almond_yield_anom2.R"))
+
+for (i in 1:length(year_range)){
+  almond_yield_anomaly2[i] <- almond_yield_anom2(temp_min_feb = tn_2_values$tn_2[i], precip_total_jan = p_1_values$p_1[i])
+}
+```
+
+```{r}
+almond_yield_anomaly2_df <- data.frame(year_range, almond_yield_anomaly2, tn_2_values$tn_2, p_1_values$p_1) %>% 
+  rename(almond_yield_anom_tons_per_acre = almond_yield_anomaly2) %>% 
+  rename(year = year_range) %>% 
+  rename(tn_2_values = tn_2_values.tn_2) %>% 
+  rename(p_1_values = p_1_values.p_1)
+```
+
+```{r}
+ggplot(data = almond_yield_anomaly2_df, aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
+  geom_point()
+```
