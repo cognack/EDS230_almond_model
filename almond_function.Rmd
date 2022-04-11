@@ -13,85 +13,42 @@ library(here)
 ```
 
 ```{r climate_data}
-# climate data hosted on Namoi Tague's github
+# import climate data hosted on Namoi Tague's github
 clim <- read.csv("https://raw.githubusercontent.com/naomitague/ESM232_Examples/main/Data/clim.txt", sep = " ", header=TRUE)
 ```
 
-## model version 1
+## Use Model
 ```{r}
+
+# import function 
 source(here("R", "almond_yield_anom.R"))
+
+# run function using climate data
 almond_yield_anomaly1 <- almond_yield_anom(climate_data = clim)
 ```
 
 ```{r}
+
+# pull yield anomoly for years of interest
 anom_2000 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2000]
 anom_2001 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2001]
 anom_2002 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2002]
 
+# print values
 anom_2000
 anom_2001
 anom_2002
 ```
 
+## Summary of Outputs
 
 ```{r}
+
+# plot almond yield
 ggplot(data = almond_yield_anomaly1, aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
   geom_point() +
   labs(title = "Almond Yield Anomaly",
-       subtitle = "Model 1",
        y = "tons/acre")
 ```
 
-## model version 2
-```{r}
-# subset data
-tn_2_values <- clim %>% 
-    filter(month == 2) %>% 
-    group_by(year) %>% 
-    summarise(tn_2 = mean(tmin_c))
 
-p_1_values <- clim %>% 
-    filter(month == 1) %>% 
-    group_by(year) %>% 
-    summarise(p_1 = sum(precip))
-```
-
-```{r}
-year_range <- seq(from = min(tn_2_values$year), to = max(tn_2_values$year), by = 1)
-```
-
-```{r}
-almond_yield_anomaly2 <- c()
-
-source(here("R", "almond_yield_anom2.R"))
-
-for (i in 1:length(year_range)){
-  almond_yield_anomaly2[i] <- almond_yield_anom2(temp_min_feb = tn_2_values$tn_2[i], precip_total_jan = p_1_values$p_1[i])
-}
-```
-
-```{r}
-almond_yield_anomaly2_df <- data.frame(year_range, almond_yield_anomaly2, tn_2_values$tn_2, p_1_values$p_1) %>% 
-  rename(almond_yield_anom_tons_per_acre = almond_yield_anomaly2) %>% 
-  rename(year = year_range) %>% 
-  rename(tn_2_values = tn_2_values.tn_2) %>% 
-  rename(p_1_values = p_1_values.p_1)
-```
-
-```{r}
-anom2_2000 <- almond_yield_anomaly2_df$almond_yield_anom_tons_per_acre[almond_yield_anomaly2_df$year == 2000]
-anom2_2001 <- almond_yield_anomaly2_df$almond_yield_anom_tons_per_acre[almond_yield_anomaly2_df$year == 2001]
-anom2_2002 <- almond_yield_anomaly2_df$almond_yield_anom_tons_per_acre[almond_yield_anomaly2_df$year == 2002]
-
-anom2_2000
-anom2_2001
-anom2_2002
-```
-
-```{r}
-ggplot(data = almond_yield_anomaly2_df, aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
-  geom_point() +
-  labs(title = "Almond Yield Anomaly",
-       subtitle = "Model 2",
-       y = "tons/acre")
-```

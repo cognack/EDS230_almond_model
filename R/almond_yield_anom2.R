@@ -2,6 +2,7 @@
 
 
 #' Almond Yield Anomaly Model 2
+#' made as a potential model example; went with other model
 #'
 #' @param temp_min_feb 
 #' @param precip_total_jan 

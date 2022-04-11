@@ -2,7 +2,7 @@
 
 
 #' Almond Yield Anomaly Model 1
-#' Function to caluclate the yield of perennial crops
+#' Function to caluclate the yield (tons/acre) of perennial crops
 #' takes coefficient inputs from Lobell et al. 2006 (crop growth) and clim data
 #' outputs yield anomoly for each year of clim data
 #' note that default values are for almonds, would need to add to model for crops that include max temps as predictor
