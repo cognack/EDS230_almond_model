@@ -2,28 +2,34 @@
 
 
 #' Almond Yield Anomaly Model 1
+#' Function to caluclate the yield of perennial crops
+#' takes coefficient inputs from Lobell et al. 2006 (crop growth) and clim data
+#' outputs yield anomoly for each year of clim data
+#' note that default values are for almonds, would need to add to model for crops that include max temps as predictor
 #'
-#' @param climate_data 
-#' @param a 
-#' @param b 
-#' @param c 
-#' @param d 
-#' @param intercept 
+#' @param climate_data dataframe, climate data input with temperature (C) and precipitation (mm) 
+#' @param temp_min_month factoral number month where average temp (C)is min for model (per Lobell, 2006)
+#' @param precip_month factoral number month where precip (mm) is predictor of yield (per Lobell, 2006)
+#' @param a first coefficient (min temp; per Lobell, 2006) 
+#' @param b second coefficient (min temp; per Lobell, 2006)
+#' @param c third coefficient (precip; per Lobell, 2006)
+#' @param d fourth coefficent (precip; per Lobell, 2006)
+#' @param intercept intercept (per Lobell, 2006)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-almond_yield_anom = function(climate_data, a = -0.015, b = -0.0046, c = -0.07, d = 0.0043, intercept = 0.28) {
+almond_yield_anom = function(climate_data, temp_min_month = 2, precip_month = 1, a = -0.015, b = -0.0046, c = -0.07, d = 0.0043, intercept = 0.28) {
 
   # manipulation of inputs
   tn_2_values <- climate_data %>% 
-    filter(month == 2) %>% 
+    filter(month == temp_min_month) %>% 
     group_by(year) %>% 
     summarise(tn_2 = mean(tmin_c))
   
   p_1_values <- climate_data %>% 
-    filter(month == 1) %>% 
+    filter(month == precip_month) %>% 
     group_by(year) %>% 
     summarise(p_1 = sum(precip))
   
