@@ -1,6 +1,20 @@
 
 
 
+#' Almond Yield Anomaly Model 2
+#'
+#' @param temp_min_feb 
+#' @param precip_total_jan 
+#' @param a 
+#' @param b 
+#' @param c 
+#' @param d 
+#' @param intercept 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 almond_yield_anom2 = function(temp_min_feb, precip_total_jan, a = -0.015, b = -0.0046, c = -0.07, d = 0.0043, intercept = 0.28) {
   
   # calculate almond yield anomaly

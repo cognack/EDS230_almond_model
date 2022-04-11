@@ -1,13 +1,26 @@
 
 
 
+#' Almond Yield Anomaly Model 1
+#'
+#' @param climate_data 
+#' @param a 
+#' @param b 
+#' @param c 
+#' @param d 
+#' @param intercept 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 almond_yield_anom = function(climate_data, a = -0.015, b = -0.0046, c = -0.07, d = 0.0043, intercept = 0.28) {
 
   # manipulation of inputs
   tn_2_values <- climate_data %>% 
     filter(month == 2) %>% 
     group_by(year) %>% 
-    summarise(tn_2 = min(tmin_c))
+    summarise(tn_2 = mean(tmin_c))
   
   p_1_values <- climate_data %>% 
     filter(month == 1) %>% 
