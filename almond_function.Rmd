@@ -1,8 +1,10 @@
 ---
-title: "Assignment 2: Almond Function"
+title: 'Assignment 2: Almond Function'
 author: "Steven Cognac, Marie Rivers, Bri Baker"
 date: "4/7/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,45 +12,69 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(here)
+library(patchwork)
 ```
 
+# Read in Climate Data
 ```{r climate_data}
 # import climate data hosted on Namoi Tague's github
-clim <- read.csv("https://raw.githubusercontent.com/naomitague/ESM232_Examples/main/Data/clim.txt", sep = " ", header=TRUE)
+clim <- read.csv(
+  "https://raw.githubusercontent.com/naomitague/ESM232_Examples/main/Data/clim.txt", 
+  sep = " ", header=TRUE)
 ```
 
-## Use Model
+## Run Almond Yield Anomaly Model.
+
 ```{r}
 
 # import function 
 source(here("R", "almond_yield_anom.R"))
 
 # run function using climate data
-almond_yield_anomaly1 <- almond_yield_anom(climate_data = clim)
+almond_yield_anomaly <- almond_yield_anom(climate_data = clim)
 ```
 
 ```{r}
 
-# pull yield anomoly for years of interest
-anom_2000 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2000]
-anom_2001 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2001]
-anom_2002 <- almond_yield_anomaly1$almond_yield_anom_tons_per_acre[almond_yield_anomaly1$year == 2002]
+# pull yield anomaly for years of interest
+anom_2000 <- almond_yield_anomaly$almond_yield_anom_tons_per_acre[almond_yield_anomaly$year == 2000]
+anom_2001 <- almond_yield_anomaly$almond_yield_anom_tons_per_acre[almond_yield_anomaly$year == 2001]
+anom_2002 <- almond_yield_anomaly$almond_yield_anom_tons_per_acre[almond_yield_anomaly$year == 2002]
 
 # print values
 anom_2000
 anom_2001
 anom_2002
 ```
-
+\newpage
 ## Summary of Outputs
 
-```{r}
+```{r fig.height=7, fig.width=8}
 
 # plot almond yield
-ggplot(data = almond_yield_anomaly1, aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
+almond_plot <- ggplot(data = almond_yield_anomaly, 
+                      aes(x = year, y = almond_yield_anom_tons_per_acre)) + 
   geom_point() +
-  labs(title = "Almond Yield Anomaly",
+  labs(title = "Modeled Almond Yield Anomaly",
        y = "tons/acre")
+
+# plot of mean February minimum temperature
+temp_min_plot <- ggplot(data = almond_yield_anomaly, aes(x = year, y = tn_2_values)) +
+  geom_line() + 
+  labs(title = "Mean of Observed Minimum February Temperatures",
+       y = "°C")
+
+# precipitation plot
+precip_plot <- ggplot(data = almond_yield_anomaly, aes(x = year, y = p_1_values)) +
+  geom_col() + 
+  labs(title = "Total January Precipitation",
+       y = "mm")
+
+(almond_plot / precip_plot / temp_min_plot) +
+  labs(caption = "Estimated anomaly of annual almond yields and model inputs based on the paper by Lobell et al. 2006; \nImpacts of future climate change on California perennial crop yields: Model projections with climate and crop uncertainties") +
+  theme(plot.caption = element_text(hjust = 0), plot.caption.position = "plot") + 
+  plot_annotation(tag_levels = c("1", "2", "3"), tag_prefix = 'Figure ')
 ```
 
-
+# Summary of results
+The input of this function uses a dataframe of daily climate variables (precipitation, minimum temperature, and maximum temperature). The outputs of our model indicate that almond yield anomaly, January precipitation totals, and average February temperature minimum are closely linked. This is because the climate data are the predictors utilized as inputs in the model developed by Lobell et al. (2006). Almond yield anomaly is more strongly coorelated with January precipitation than with February minimum temperature.
