@@ -1,0 +1,104 @@
+---
+---
+title: 'Assignment 3: Almond Profit'
+author: "Steven Cognac, Marie Rivers, Bri Baker"
+date: "4/7/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(purrr)
+
+```
+
+# Read in Climate Data
+```{r climate_data}
+# import climate data hosted on Namoi Tague's github
+clim <- read.csv(
+  "https://raw.githubusercontent.com/naomitague/ESM232_Examples/main/Data/clim.txt", 
+  sep = " ", header=TRUE)
+```
+
+## Run Almond Profit Model.
+
+```{r}
+
+# import function 
+source(here("R", "almond_profit.R"))
+
+# run function using climate data
+almond_profits <- almond_profit(climate_data = clim)
+
+```
+
+## Summary of Outputs
+
+```{r fig.height=7, fig.width=8}
+
+# plot almond yield
+almond_plot <- ggplot(data = almond_profits, 
+                      aes(x = year, y = almond_profit)) + 
+  geom_point() +
+  labs(title = "Modeled Almond Profit",
+       y = "$")
+
+almond_plot
+
+```
+
+# Sensitivity Analysis
+
+```{r}
+
+
+# generate samples for both parameters
+
+deviation  <-  0.20
+price <- 4000
+acres <- 1600000
+
+avg_cost <- runif(min = price - deviation * price, 
+                max = price + deviation * price, n=100)
+
+acres_used <- runif(min = acres - deviation * price, 
+                    max = acres + deviation * price, n=100)
+
+parms <- cbind.data.frame(avg_cost, acres_used)
+
+# use pmap 
+results <- parms %>% pmap(almond_profit,
+                          climate_data = clim)
+
+```
+
+```{r}
+ 
+annual_profit <- map_df(results,`[`, c("almond_profit",
+                                       "almond_profit_anom",
+                                       "year"))
+annual_profit <- cbind.data.frame(annual_profit, parms)
+
+
+ggplot(annual_profit, aes(as.factor(year), 
+                          almond_profit_anom, 
+                          group = year))+
+  geom_boxplot()+
+  labs(y = "Profit $", x = "Year")
+
+ggplot(annual_profit, aes(as.factor(year), 
+                          almond_profit, 
+                          group = year))+
+  geom_boxplot()+
+  labs(y = "Profit $", x = "Year")
+
+```
+
+
+# Summary of results
+
