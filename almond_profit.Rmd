@@ -1,8 +1,7 @@
 ---
----
 title: 'Assignment 3: Almond Profit'
 author: "Steven Cognac, Marie Rivers, Bri Baker"
-date: "4/7/2022"
+date: "4/18/2022"
 output:
   pdf_document: default
   html_document: default
@@ -14,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(purrr)
+library(patchwork)
 
 ```
 
@@ -37,26 +37,9 @@ almond_profits <- almond_profit(climate_data = clim)
 
 ```
 
-## Summary of Outputs
-
-```{r fig.height=7, fig.width=8}
-
-# plot almond yield
-almond_plot <- ggplot(data = almond_profits, 
-                      aes(x = year, y = almond_profit)) + 
-  geom_point() +
-  labs(title = "Modeled Almond Profit",
-       y = "$")
-
-almond_plot
-
-```
-
 # Sensitivity Analysis
 
 ```{r}
-
-
 # generate samples for both parameters
 
 deviation  <-  0.20
@@ -77,28 +60,41 @@ results <- parms %>% pmap(almond_profit,
 
 ```
 
-```{r}
+# Put into dataframe and clean
+
+```{r clean_data}
  
 annual_profit <- map_df(results,`[`, c("almond_profit",
                                        "almond_profit_anom",
-                                       "year"))
+                                       "year")) %>% 
+  mutate(almond_profit_billion_dollar = (almond_profit/1000000000),
+         almond_profit_anom_billion_dollar = (almond_profit_anom/1000000000))
+
 annual_profit <- cbind.data.frame(annual_profit, parms)
 
+```
 
-ggplot(annual_profit, aes(as.factor(year), 
-                          almond_profit_anom, 
-                          group = year))+
-  geom_boxplot()+
-  labs(y = "Profit $", x = "Year")
+```{r}
+profit_plot <- ggplot(annual_profit, aes(x = as.factor(year), 
+                                       y = almond_profit_billion_dollar, 
+                                       group = year))+
+  geom_boxplot() +
+  labs(y = "Profit (Billion Dollars)", 
+       x = "Year", 
+       title = "Sensitivity Analysis of Almond Profit in California",
+       subtitle = "Parameters varied include 'acre' and 'cost'",
+       caption = "Average almond yield, price and acreage source:\n https://fruitgrowers.com/california-almond-production-is-booming/ \n https://www.almonds.com/sites/default/files/2021-04/2020%20Acreage%20Report.pdf") +
+  theme(plot.caption = element_text(hjust = -0.2), plot.caption.position = "plot") +
+  scale_x_discrete(breaks = seq(1989,2010, by = 2)) +
+  theme_minimal()
 
-ggplot(annual_profit, aes(as.factor(year), 
-                          almond_profit, 
-                          group = year))+
-  geom_boxplot()+
-  labs(y = "Profit $", x = "Year")
-
+profit_plot
 ```
 
 
 # Summary of results
+
+```{r}
+# ggsave(here("figs/profit_plot.jpg"), plot = profit_plot)
+```
 

@@ -27,8 +27,8 @@
 almond_profit = function(climate_data, temp_min_month = 2, precip_month = 1, 
                              a = -0.015, b = -0.0046, 
                              c = -0.07, d = 0.0043, intercept = 0.28,
-                             avg_yield = 1500000, avg_cost = 4000, 
-                             acres_used = 1600000) {
+                             avg_yield = 1926000, avg_cost = 3000, 
+                             acres_used = 1330000) {
   
   # manipulation of inputs to create a dataframe of minimum temperatures
   tn_2_values <- climate_data %>% 
@@ -48,7 +48,7 @@ almond_profit = function(climate_data, temp_min_month = 2, precip_month = 1,
   # create empty vector for model output
   almond_profit <- vector(mode = 'numeric', length = length(year_range))
   
-  almond_yield_tons_per_acre <- vector(mode = 'numeric', length = length(year_range))
+  almond_yield_tons <- vector(mode = 'numeric', length = length(year_range))
   
   almond_profit_anom <- vector(mode = 'numeric', length = length(year_range))
   
@@ -58,19 +58,20 @@ almond_profit = function(climate_data, temp_min_month = 2, precip_month = 1,
     tn_2 <- tn_2_values$tn_2[tn_2_values$year == year_range[i]]
     p_1 <- p_1_values$p_1[p_1_values$year == year_range[i]]
     anom_calc_tons_per_acre <- (a * tn_2) + (b * tn_2 ^ 2) + (c * p_1) + (d * p_1 ^ 2) + intercept
-    yield <- anom_calc_tons_per_acre + avg_yield 
+    anom_tons <- anom_calc_tons_per_acre * acres_used
+    yield_tons <- anom_tons + avg_yield 
     profit_anom_calc <- anom_calc_tons_per_acre * avg_cost * acres_used
-    profit_calc <- (yield) * avg_cost * acres_used
+    profit_calc <- (yield_tons) * avg_cost
     
     
     almond_profit[i] <- profit_calc
-    almond_yield_tons_per_acre[i] <- yield
+    almond_yield_tons[i] <- yield_tons
     almond_profit_anom[i] <- profit_anom_calc
 
   }
   # create dataframe of model output
   results <- data.frame(year_range, almond_profit, almond_profit_anom,
-                        almond_yield_tons_per_acre,
+                        almond_yield_tons,
                         tn_2_values$tn_2, p_1_values$p_1) %>% 
     rename(year = year_range) %>% 
     rename(tn_2_values = tn_2_values.tn_2) %>% 
